@@ -1,0 +1,116 @@
+<html>
+
+<head>
+    <title>Test Page</title>
+    <style>html,
+        body {
+            cursor: none;
+        }
+
+        .main {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow: hidden;
+            height: 1080;
+            width: 2560;
+        }
+
+        * {
+            font-family: "Foundry Gridnik", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            /* mix-blend-mode: screen; */
+        }
+
+        .debug {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 999999;
+        }
+
+        .note {
+            font-size: 1.5rem;
+            padding: 20rem;
+            text-align: center;
+            color: white;
+        }
+
+        body {
+            overflow: hidden;
+            padding: 0;
+            margin: 0;
+        }
+
+        .zoom {
+            transform: translate(0, 0) scale(.6);
+            transform-origin: 0 0;
+            overflow: hidden;
+            padding: 0;
+            margin: 0;
+            position: fixed;
+            top: 0;
+            width: 2560px;
+            height: 1080px;
+            cursor: none;
+            left: 0;
+        }
+
+        #leap {
+            opacity: 0;
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            background: black;
+            color: white;
+            padding: 10px;
+            z-index: 999999;
+            font-size: 1em;
+            display: block;
+            cursor: pointer;
+        }
+
+        #leap:hover {
+            opacity: 1;
+            background: black;
+        }
+
+        .debug {
+            pointer-events: none;
+            display: none;
+        }</style>
+<link rel="stylesheet" href="/main.cf58f9de.css"></head>
+
+<body>
+    <div class="zoom">
+        <div style="background:black;" class="main">
+            <div id="note" class="note">Booting.. Compiling datasets</div>
+        </div>
+        <div id="app" class="main">
+            <hd v-bind:large="control.mode == -1"></hd>
+            <!-- <pin v-show="control.mode == 2" v-bind:patent='pin'></pin> -->
+            <pin v-show="control.mode == 2" v-for="p in pins" v-bind:pin="p"></pin>
+            <!-- <tinypin v-show="control.mode == -1" v-for='index in 15' v-bind:index='index'></tinypin> -->
+            <mainmenu v-bind:billboards="data.billboards" v-bind:control="control"></mainmenu>
+            <billboard v-for="billboard, key in data.billboards" v-bind:k="key" v-bind:billboard="billboard" v-bind:tag="data.tags[key]"></billboard>
+            <div id="leap" v-on:click="toggle">LEAP : <b></b>{{control.leap_bypass ? "OFF" : "ON"}}</div>
+        </div>
+    </div>
+    <script src="/init.d478aeee.js"></script>
+    <script src="/main.cf58f9de.js"></script>
+
+    <div class="debug"></div>
+</body>
+
+</html>
