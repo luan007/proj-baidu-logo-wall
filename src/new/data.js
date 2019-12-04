@@ -182,17 +182,17 @@ var data = {
             en: "partner",
             desc: `2017年5月，百度云云市场1.0上线，正式对外发布\n2018年11月，百度云云市场2.0版本上线\n覆盖品类11大类（镜像环境、建站推广、上云服务、安全服务、企业应用、软件工具、机器人、人工智能、数据应用、区块链、公司服务）商品品类80+子类`
         },
-        "服务商AI NO.1": {
-            selected: null,
-            show: "number",
-            // kind: "number",
-            number: "AI NO.1", // 10860
-            zoom_t: 0,
-            pins: {},
-            en: "ecosphere",
-            // vert: 50,
-            desc: ""
-        },
+        // "服务商AI NO.1": {
+        //     selected: null,
+        //     show: "number",
+        //     // kind: "number",
+        //     number: "AI NO.1", // 10860
+        //     zoom_t: 0,
+        //     pins: {},
+        //     en: "ecosphere",
+        //     // vert: 50,
+        //     desc: ""
+        // },
         "合作伙伴": {
             selected: null,
             show: "ball",

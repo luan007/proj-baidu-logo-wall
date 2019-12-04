@@ -60,6 +60,7 @@ export function build() {
 
     // 时间轴
     var group = new THREE.Group();
+    // 50, 50, 40, 32, 10, true, 0, 3.7
     var geometry = new THREE.CylinderGeometry( 50, 50, 35, 32, 10, true, 0, 3.7 ); //new THREE.TorusGeometry( 60, 10, 16, 160 );
     var material = new THREE.MeshBasicMaterial( { 
         color: 0xffffff,
@@ -71,9 +72,9 @@ export function build() {
     } );
     var torus = new THREE.Mesh( geometry, material );
     torus.rotation.x = 3.13//5//1.4//Math.PI * 2 / 2;
-    torus.rotation.y = 3//1.2//5//1.4//Math.PI * 2 / 2;
+    torus.rotation.y = 4.4//3//1.3//3//1.2//5//1.4//Math.PI * 2 / 2;
     group.add(torus);
-
+    window.t = torus;
     mainGrp.add(group);
 
 
@@ -169,7 +170,7 @@ export function build() {
 
         // 时间轴
         // group.rotation.x = -control.y / 10//  * Math.PI * 10 ;
-        group.rotation.y = -control.x * Math.PI * 8//-control.x * Math.PI * 4;
+        group.rotation.y = control.x * Math.PI * 8//-control.x * Math.PI * 4;
 
         material.opacity = updatable.ease(material.opacity, control.mode == 3 ? 1 : 0, 0.1, 0.0001);
         material.alphaTest = updatable.ease(material.alphaTest, control.mode == 3 ? 0 : 0.5, 0.1, 0.0001);
@@ -189,7 +190,7 @@ export function build() {
         var key = control.billboard;
         if( control.mode == -1){
             for(let i = 0; i < pos.length; i++){
-                pos[i] += (init_arr[i] - pos[i]) * 0.05;
+                pos[i] += (init_arr[i] - pos[i]) * 0.1;
             }
             pointMat.size = updatable.ease(pointMat.size, 50, 0.1, 0.0001);
         }
@@ -223,7 +224,7 @@ export function build() {
             }
             pointMat.size = updatable.ease(pointMat.size, 70, 0.1, 0.0001);
             tilt_feel.rotation.x = -control.y  ;
-            tilt_feel.rotation.y = -control.x * Math.PI * 4 ;
+            tilt_feel.rotation.y = -control.x * Math.PI * 6 ;
         }
         if(control.mode == 1 && billboards[key] == "number"){
             for(let i = 0; i < pos.length / 3; i++){

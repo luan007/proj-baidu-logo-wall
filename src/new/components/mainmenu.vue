@@ -139,6 +139,10 @@ export default {
     // border-bottom: 3px solid white;
     opacity: 1;
   }
+  // .item:last-child {
+  //   // flex: 1;
+  //   width: 360px;
+  // }
 }
 
 .selection {
