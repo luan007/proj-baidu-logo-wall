@@ -11,21 +11,21 @@ import {
     ChaosScene
 } from "./selector.js";
 
-// var test = require("../../excel/test.json");
-// var patents = [];
-// test.forEach(t => {
-//     if(Math.random() < 0.02){
-//         patents.push(t);
-//     }
-// });
-var patents = require("../../excel/test.json");
+var test = require("../../excel/test.json");
+var patents = [];
+test.forEach(t => {
+    if(Math.random() < 0.05){
+        patents.push(t);
+    }
+});
+// var patents = require("../../excel/test.json");
 window.patents = patents;
 window.DEBUG = false;
 
 // console.log(patents);
 window.pins = [];
 // pins[0] = {};
-for(let i = 0; i < 1; i++){
+for(let i = 0; i < 5; i++){
     pins[i] = {};
 }
 
@@ -307,22 +307,23 @@ function buildArchitype() {
             points.push(prep);
         }
     }
-    var rand_table = [];
-    var range = Math.floor(points.length /  window.patents.length); // window.patents.length); // 
-    for (var p = 0; p < window.patents.length; p++) {
-        var rand = Math.floor(Math.random() * range * 0.7);
-        //da seperation
-        rand_table.push(p + rand);
+    // var rand_table = [];
+    // var range = Math.floor(points.length /  window.patents.length); 
+    // for (var p = 0; p < window.patents.length; p++) {
+    //     var rand = Math.floor(Math.random() * range * 0.7);
+    //     //da seperation
+    //     rand_table.push(p + rand);
+    // }
+    // for (var i = 0; i < rand_table.length; i++) {
+    //     //apply
+    //     if( rand_table[i] + i * range > points.length){
+    //         break;
+    //     }
+    //     points[rand_table[i] + i * range].content = window.patents[i];
+    // }
+    for (var i = 0; i < points.length; i++) {
+        points[ Math.floor(Math.random() * points.length) ].content = window.patents[i];
     }
-    for (var i = 0; i < rand_table.length; i++) {
-        //apply
-        if( rand_table[i] + i * range > points.length){
-            break;
-        }
-        // console.log(i, points[rand_table[i] + i * range], window.patents[i]);
-        points[rand_table[i] + i * range].content = window.patents[i];
-    }
-    // console.log(rand_table);
     return points;
 }
 

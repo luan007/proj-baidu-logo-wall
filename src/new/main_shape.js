@@ -14,7 +14,20 @@ import {
 } from "./billboards.js";
 var InstancedMesh = _instance(window.THREE);
 var noise = new SimplexNoise();
+window.noise = noise;
 import * as ao from "./lib/particle-util";
+
+class particle {
+    constructor(){
+        this.p = [0, 0, 0];
+        this.v = [0, 0, 0];
+        this.a = [0, 0, 0];
+        this.t = [0, 0, 0];
+        this.i = [0, 0, 0];
+    }
+}
+
+var ps = [];
 
 export function build() {
     var len = 24, len3 = 3;
@@ -47,7 +60,6 @@ export function build() {
 
     // 时间轴
     var group = new THREE.Group();
-    // (  60, 60, 50, 32, 10, true, 0, 3.7);
     var geometry = new THREE.CylinderGeometry( 50, 50, 35, 32, 10, true, 0, 3.7 ); //new THREE.TorusGeometry( 60, 10, 16, 160 );
     var material = new THREE.MeshBasicMaterial( { 
         color: 0xffffff,
@@ -60,30 +72,22 @@ export function build() {
     var torus = new THREE.Mesh( geometry, material );
     torus.rotation.x = 3.13//5//1.4//Math.PI * 2 / 2;
     torus.rotation.y = 3//1.2//5//1.4//Math.PI * 2 / 2;
-    window.t = torus;
     group.add(torus);
-    
-    // group.rotateX = Math.PI;
+
     mainGrp.add(group);
 
 
     // logo;
-    function GetRandomNum(Min,Max)
-    {   
-        var Range = Max - Min;   
-        var Rand = Math.random();   
-        return(Min + Math.round(Rand * Range));   
-    } 
-    // uv -> 3d
-    function convert2d3d(lat, long) {
-        return {
-            x: Math.cos(lat) * Math.cos(long),
-            y: Math.sin(lat),
-            z: Math.cos(lat) * Math.sin(long),
-        }
-    }
-
     var radius = 300;
+    var COUNT = 20000//1000000;
+    var pointBG = new THREE.BufferGeometry();
+    var pos_arr = new Float32Array(COUNT * 3);
+    var targer_arr = new Float32Array(COUNT * 3);
+    var acceleration_arr = new Float32Array(COUNT * 3);
+    var velocity_arr = new Float32Array(COUNT * 3);
+    var ball_arr = new Float32Array(COUNT * 3);
+    var attrbuffer = new THREE.BufferAttribute(pos_arr, 3);
+    var init_arr = new Float32Array(COUNT * 3);
     var pointMat = new THREE.PointsMaterial({
         color: 0xffffff,//0x0090fc,
         size: 30, 
@@ -94,20 +98,9 @@ export function build() {
         map: resources.test,
         blending: THREE.AdditiveBlending
     });
-    var COUNT = 20000//1000000;
-    var pointBG = new THREE.BufferGeometry();
-    var pos_arr = new Float32Array(COUNT * 3);
-    var targer_arr = new Float32Array(COUNT * 3);
-    var acceleration_arr = new Float32Array(COUNT * 3);
-    var velocity_arr = new Float32Array(COUNT * 3);
-    var transition_arr = new Float32Array(COUNT * 3);
-    var attrbuffer = new THREE.BufferAttribute(pos_arr, 3);
-    var init_arr = new Float32Array(COUNT * 3);
 
     var mult = 1.7; // 1.7
     for (var i = 0; i < COUNT; i++) {
-        //var lat = GetRandomNum(1, 10) + Math.random();
-        //var long = GetRandomNum(1, 10) + Math.random();
         var rotX = Math.random() * Math.PI * 2;
         var rotY = Math.random() * Math.PI * 2;
         var rotZ = Math.random() * Math.PI * 2;
@@ -125,23 +118,24 @@ export function build() {
 
         var a = [0, 0, 0];
         ao.particleUtilEulerField(a, 0.2, pos_arr[i * 3 + 0], pos_arr[i * 3 + 1], pos_arr[i * 3 + 2]);
-        // console.log(a);
 
         acceleration_arr[i * 3 + 0] = a[0];
         acceleration_arr[i * 3 + 1] = a[1];
         acceleration_arr[i * 3 + 2] = a[2];
 
         velocity_arr[i * 3 + 0] = Math.random() * 0.01 - 0.005
-        velocity_arr[i * 3 + 1] = 0.06
+        velocity_arr[i * 3 + 1] = Math.random() * 0.06 - 0.03
         velocity_arr[i * 3 + 2] = Math.random() * 0.01 - 0.005
 
         targer_arr[i * 3 + 0] = vec.x * radius; 
         targer_arr[i * 3 + 1] = vec.y * radius;
         targer_arr[i * 3 + 2] = vec.z * radius;
 
-        transition_arr[i * 3 + 0] = vec.x * radius * mult; 
-        transition_arr[i * 3 + 1] = vec.y * radius * mult;
-        transition_arr[i * 3 + 2] = vec.z * radius * mult;
+        // ball
+        // mult = 1.3;
+        ball_arr[i * 3 + 0] = vec.x * radius * mult ; 
+        ball_arr[i * 3 + 1] = vec.y * radius * mult ;
+        ball_arr[i * 3 + 2] = vec.z * radius * mult ;
     }
     pointBG.addAttribute("position", attrbuffer);
     var block_arr = new Float32Array(COUNT * 2);
@@ -170,10 +164,11 @@ export function build() {
     tilt_feel.add(point); // point
     mainGrp.add(tilt_feel);
 
-    // pointBG.addAttribute("position", attrbuffer);
+    var tem = new THREE.Vector3();
     updatable.enable((t) => {
+
         // 时间轴
-        group.rotation.x = -control.y / 5//  * Math.PI * 10 ;
+        // group.rotation.x = -control.y / 10//  * Math.PI * 10 ;
         group.rotation.y = -control.x * Math.PI * 8//-control.x * Math.PI * 4;
 
         material.opacity = updatable.ease(material.opacity, control.mode == 3 ? 1 : 0, 0.1, 0.0001);
@@ -186,7 +181,6 @@ export function build() {
         tilt_feel.rotation.x = -control.y / 1.5 ;
         tilt_feel.rotation.y = -control.x ;
 
-        // pointMat.opacity = updatable.ease(pointMat.opacity, control.z > 70 ? 1 : 0, 0.1, 0.0001);
         pointMat.size = updatable.ease(pointMat.size, 10, 0.1, 0.0001);
         pointMat.needsUpdate = true;
 
@@ -199,28 +193,33 @@ export function build() {
             }
             pointMat.size = updatable.ease(pointMat.size, 50, 0.1, 0.0001);
         }
-        if(control.mode == 1){
+        if(control.mode == 1 && control.billboard == ""){
+            for(let i = 0; i < pos.length; i++){
+                pos[i] += (init_arr[i] - pos[i]) * 0.05;
+            }
+            pointMat.size = updatable.ease(pointMat.size, 20, 0.1, 0.0001);
+        } else {
             for(let i = 0; i < pos.length; i++){
                 pos[i] += (targer_arr[i] - pos[i]) * 0.05;
             }
             pointMat.size = updatable.ease(pointMat.size, 20, 0.1, 0.0001);
         }
         if(control.mode == 1 && billboards[key] == "ball"){
-            for(let i = 0; i < pos.length; i++){
-                // acceleration_arr[i * 3 + 0] = (transition_arr[i * 3 + 0] - pos[i * 3 + 0]) * 0.1;
-                // acceleration_arr[i * 3 + 1] = (transition_arr[i * 3 + 1] - pos[i * 3 + 1]) * 0.1;
-                // acceleration_arr[i * 3 + 2] = (transition_arr[i * 3 + 2] - pos[i * 3 + 2]) * 0.1;
+            for(let i = 0; i < pos.length  ; i++){
+                // acceleration_arr[i * 3 + 0] = 0.02 * (noise.noise( pos[i * 3 + 0] * 0.01, pos[(i + 1) * 3 + 0] * 0.01)) * Math.abs((ball_arr[i * 3 + 0] - pos[i * 3 + 0] ))
+                // acceleration_arr[i * 3 + 1] = 0.02 * (noise.noise( pos[i * 3 + 1] * 0.01, pos[(i + 1) * 3 + 1] * 0.01)) * Math.abs((ball_arr[i * 3 + 1] - pos[i * 3 + 1] ))
+                // acceleration_arr[i * 3 + 2] = 0.02 * (noise.noise( pos[i * 3 + 2] * 0.01, pos[(i + 1) * 3 + 2] * 0.01)) * Math.abs((ball_arr[i * 3 + 2] - pos[i * 3 + 2] ))
 
                 // velocity_arr[i * 3 + 0] += acceleration_arr[i * 3 + 0];
                 // velocity_arr[i * 3 + 1] += acceleration_arr[i * 3 + 1];
                 // velocity_arr[i * 3 + 2] += acceleration_arr[i * 3 + 2];
+                // tem = ao.particleThreeArrToVec3( velocity_arr[i * 3 + 0],  velocity_arr[i * 3 + 1],  velocity_arr[i * 3 + 2]);
+                // tem.clampLength(-2, 2);
+                // pos[i * 3 + 0] += tem.x;
+                // pos[i * 3 + 1] += tem.y;
+                // pos[i * 3 + 2] += tem.z;
 
-                // pos[i * 3 + 0] += velocity_arr[i * 3 + 0];
-                // pos[i * 3 + 1] += velocity_arr[i * 3 + 1];
-                // pos[i * 3 + 2] += velocity_arr[i * 3 + 2];
-
-                pos[i] += (transition_arr[i] - pos[i]) * 0.05;
-                // console.log( (transition_arr[i] - pos[i]) * 0.05);
+                pos[i] += (ball_arr[i] - pos[i]) * 0.1; // 0.5
             }
             pointMat.size = updatable.ease(pointMat.size, 70, 0.1, 0.0001);
             tilt_feel.rotation.x = -control.y  ;
@@ -241,7 +240,6 @@ export function build() {
                 pos[i * 3 + 1] += velocity_arr[i * 3 + 1];
                 pos[i * 3 + 2] += velocity_arr[i * 3 + 2];
             }
-            // instancedMesh.opacity = 0;
             pointMat.size = updatable.ease(pointMat.size, 20, 0.1, 0.0001);
         }
         position.needsUpdate = true;
@@ -275,7 +273,6 @@ export function build() {
     instancedMesh.visible = true;
     instancedMesh.castShadow = false;  // 投射阴影
     instancedMesh.receiveShadow = false; // 接受阴影
-    var init_scale = new THREE.Vector3(0.2, 0.2, 0.2);
 
     var particleSystem = [];
     for (var i = 0; i < points.length; i++) {
@@ -283,15 +280,14 @@ export function build() {
         particleSystem.push(p);
     }
 
-    
     InitParticleScenes(particleSystem);
 
     var pointS = points.filter( p => p.content != null);
     var data = pointS;
-    var num = 1;
+    var num = 5;
     function pinUpdate(){
         data = data.sort((a, b)=>{
-            return a.content.world_position[2] - b.content.world_position[2] ;
+            return b.content.world_position[2] - a.content.world_position[2] ;
         })
         for(let i = 0; i < num; i++){
             pins[i].visibility = 0;
@@ -301,16 +297,16 @@ export function build() {
             pins[i].x = (world2screen.x * window.data.width) / 2 + window.data.width / 2;
             pins[i].y = -(world2screen.y * window.data.height) / 2 + window.data.height / 2; 
             pins[i].data = data[i].content;
-            pins[i].visibility = Math.max(0, 1 - (data[i].position.z / 300) );
+            pins[i].visibility = Math.sin( (data[0].content.world_position[2] - data[i].content.world_position[2]) ) * 4 // 1 - (data[i].content.world_position[2]  / 200) - (data[0].content.world_position[2] * 0.02 ) ;
+        }
+        for(let i = 0; i < data.length; i++){
+            data[i].content.show = i < num ? true : false;
         }
     }
-
-    
 
     var ex = 0;
     var ey = 0;
     var rotE = 0.05;
-
 
     var _t = 0;
 
@@ -323,13 +319,8 @@ export function build() {
         return a;
     }
     
-    // console.log(instancedMesh.visible = false);
-    // self.i = instancedMesh;
-    // var pt, x, y, z;
-    // var arr = [];
     var mesh_scale = updatable.ease(1, 1, 0.1, 0.0001);
     updatable.enable(() => {
-        // console.log(control.billboard);
         if(control.billboard == "" || typeof billboards[control.billboard] == "string"){
             mesh_scale = updatable.ease(mesh_scale, 0, 0.1, 0.0001);
         } else {
@@ -339,7 +330,6 @@ export function build() {
         pinUpdate();
         
         _t += 0.01;
-        // instancedMesh.visible =  control.z >= window.data.z ? false : true//updatable.ease(instancedMesh.visible, control.z != window.data.z ? 1 : 0, 0.1, 0.0001);
         if (control.useLocalXY > 0) {
             ex = spin(ex, control.localX);
             ey = spin(ey, control.localY);
@@ -361,14 +351,8 @@ export function build() {
         instancedMesh.needsUpdate('quaternion');
         (!window.WHITE_WF) && instancedMesh.needsUpdate('color');
         instancedMesh.rotation.x = ey * Math.PI * 2;
-        instancedMesh.rotation.y = ex * Math.PI * 2;
-
-
-
-        
+        instancedMesh.rotation.y = ex * Math.PI * 2; 
     })
-    // console.log(arr);
-    console.log(instancedMesh);
 
     mainGrp.add(instancedMesh);
     window.mainGrp = mainGrp;

@@ -43,7 +43,7 @@ export function load(renderer, cb) {
     loadObj("/assets/shape_shell.obj", "shell");
     loadTexture("/assets/logo/方正宽带.png", "logo1")
     loadTexture("/assets/时间轴的副本.png", "time1")
-    loadTexture("/assets/时间轴.png", "time2")
+    loadTexture("/assets/时间轴的副本2.png", "time")
     loadTexture("/assets/star.png", "star")
     loadTexture("/assets/test5.png", "test")
 }

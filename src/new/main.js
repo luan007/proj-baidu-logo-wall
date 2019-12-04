@@ -113,6 +113,8 @@ effectFXAA.uniforms.resolution.value.set(1 /
     (data.width  * data.hdBoost), 1 / (data.height * data.hdBoost));
 composer.addPass(effectFXAA);
 
+window.composer = composer;
+
 
 var bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(data.width, data.height), 0.5, 0.5, 0.8);
 window.DISABLE_BLOOM ? null : composer.addPass(bloomPass);

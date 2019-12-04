@@ -14,13 +14,10 @@ export class SelectorScene extends ParticleScene {
             this.visibility_t = 0;
             this.visibility = 0;
         } else if (control.mode == 2 || control.mode == 0) {
-            // console.log(control.mode);
             this.visibility_t = 1;
         } else if (control.mode == 1 && control.billboard == '') {
-            // console.log(control.mode);
             this.visibility_t = 1;
         } else {
-            // console.log(control.mode);
             this.visibility_t = 0;
         }
         super.update();
@@ -44,11 +41,11 @@ export class SelectorScene extends ParticleScene {
             // else {
                 pt.c_t.setRGB(0.3, 0.3, 0.3); // pt.c_t.setRGB(1, 1, 1);
             // }
-            if (pins[0].data == pt.point.content) {
+            if (pt.point.content != null && pt.point.content.show != null && pt.point.content.show >= 0.7) {
                 pt.c_t.setRGB(1, 0.5, 0.5);
                 pt.s_t = 0.3;
                 // window.pin = window.closestPatent;
-            } 
+            }
         } else {
             pt.c_t.setRGB(1, 1, 1);
         }
