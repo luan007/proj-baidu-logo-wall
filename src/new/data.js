@@ -483,7 +483,14 @@ window.control = control;
 
 document.addEventListener("mousemove", function (e) {
     control.tx = e.clientX / (data.width * scale);
+    if(control.tx < 0.3) {
+        control.tx = control.tx / 0.3 * 0.7;
+    } else {
+        control.tx = 0.7 + (control.tx - 0.3) / 0.7 * 0.3;
+    }
+    // console.log(control.tx);
     control.ty = e.clientY / (data.height * scale);
+   
     control.motion = Date.now();
 });
 
