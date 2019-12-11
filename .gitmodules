@@ -1,0 +1,3 @@
+[submodule "libao"]
+	path = libao
+	url = http://github.com/luan007/libao
