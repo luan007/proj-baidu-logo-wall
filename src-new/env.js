@@ -301,7 +301,7 @@ var scene_elevate = ao.sceneBuild((t, dt) => {
     var reel_ui = [];
     for(var i = 0; i < 10; i++) {
         reel_ui.push({
-            key: "catpin",
+            comp: "catpin",
             x: 0,
             y: 0,
             viz: 1

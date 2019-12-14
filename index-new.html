@@ -52,7 +52,7 @@
 
         </div>
         <div id="app">
-            <component v-for='elem in elems' :is="elem.key" v-bind='elem'></component>
+            <component v-for='elem in elems' :is="elem.comp" v-bind='elem'></component>
         </div>
     </div>
     <script src="./libao/global.js"></script>
