@@ -5,7 +5,12 @@ import env from "./env";
 export var baked = {
     points: [],
     counts: {},
-    ids: {}
+    ids: {},
+    pos_target: {
+        big_main:  bake_big_numbers('No.1'),
+        big_vendor:  bake_big_numbers('2000+'),
+        big_sku:  bake_big_numbers('3000+')
+    }
 };
 
 export function init() {
@@ -113,9 +118,16 @@ function bindData(points) {
 
     var ptid = 0;
     for (var i in counts) {
+        var ori_id = ptid;
         for (var j = 0; j < ids[i].length; j++) {
             baked.points[ptid].content = ids[i][j];
             baked.points[ptid++].content.targets = {};
+        }
+        while (true) { //bad bad choice
+            var anchor = Math.floor(Math.random() * ids[i].length) + ori_id;
+            if (!baked.points[anchor].content.fake) continue; //..wow
+            ids[i].anchor = anchor;
+            break;
         }
     }
 
@@ -158,4 +170,65 @@ function bake_shape_reel() {
         vec.r = r;
         vec.y *= 10;
     }
+}
+
+
+//paint utils
+
+function beginPaint(w, h, debug) {
+    var canvas = document.createElement("CANVAS");
+    canvas.height = h;
+    canvas.width = w;
+    if (debug) {
+        document.body.appendChild(canvas);
+    }
+    var ctx = canvas.getContext("2d");
+    ctx.w = w;
+    ctx.h = h;
+    return ctx;
+}
+
+function doText(c, str, font) {
+    // console.log(typeof str); typeof str == "string" ? "74px DINCond-Black" :
+    font = font || "90px DINCond-Black";
+    c.textBaseline = "middle";
+    c.textAlign = "center";
+    c.font = font;
+    c.fillStyle = "white";
+    c.fillText(str, c.w / 2, c.h / 2);
+}
+
+function endPaint(c, n, z) {
+    var data = c.getImageData(0, 0, c.w, c.h).data;
+    var pos = [];
+    var x = 0;
+    var y = 0;
+    for (var i = 0; i < data.length; i += 4) {
+        x++;
+        if (x >= c.w) {
+            x = 0;
+            y++;
+        }
+        if (data[i] > 100) {
+            //calculate x,y position
+            pos.push([
+                (x - c.w / 2) / c.w * n,
+                (y - c.h / 2) / c.h / 3 * n,
+                z
+            ]);
+        }
+    }
+    return ao.shuffleArray(pos);
+}
+
+window.beginPaint = beginPaint;
+window.endPaint = endPaint;
+window.doText = doText;
+
+
+function bake_big_numbers(number) {
+    var ctx = beginPaint(300, 100, false);
+    doText(ctx, number);
+    var pos = endPaint(ctx, 1, 0);
+    return pos;
 }

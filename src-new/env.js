@@ -1,9 +1,21 @@
 import * as dt from "./data.json"
 import * as ao from "../libao";
 import * as three from "three";
+import {
+    baked
+} from "./baker.js";
+
+
+var fixedstuff = {
+    comp: "fixedstuff",
+    scene: "",
+    hover_indicator: "",
+    sub_scenes: 0
+};
 
 var simplex = ao.openSimplex;
 
+window.baked = baked;
 //particle behaviours
 
 var vcache = new THREE.Vector3();
@@ -173,17 +185,19 @@ var mod_crystal = ao.extra.particleModifier(
                     p.a[i] += (1 + p.burst) * 0.45 * (simplex.noise2D(p.p[i] * 0.1 + t * 0.1, p.p[(i + 1) % 3] * 0.1 + t * 0.1)) * Math.min(1, Math.abs((xyz[i] - p.p[i])));
                 }
             }
-        } else if (p.mode == 2) {
-            if (key == 'a') {
-                xyz[0] = p.core.position.x * 0;
-                xyz[1] = p.core.position.y * 0;
-                xyz[2] = p.core.position.z * 0;
-                p.s = ao.ease(p.s, 0.001 * data.particle_size, 0.01, 0.0001);
+        } else if (p.mode == 3) {
+            if (key == 'a' && baked.pos_target[data.current_scene] != undefined) {
+                var pos_list = baked.pos_target[data.current_scene];
+                var pos = pos_list[i % pos_list.length];
+                xyz[0] = pos[0] * 80;
+                xyz[1] = -pos[1] * 80;
+                xyz[2] = 0;
+                p.s = ao.ease(p.s, 2 * data.particle_size, 0.01, 0.0001);
                 var damp = 0.2 * p.target_e;
                 for (var i = 0; i < 3; i++) {
                     //G(m1m2) / R2
                     p.a[i] = (xyz[i] - p.p[i]) * damp;
-                    p.a[i] += (1 + p.burst) * 0.45 * (simplex.noise2D(p.p[i] * 0.1 + t * 0.1, p.p[(i + 1) % 3] * 0.1 + t * 0.1)) * Math.min(1, Math.abs((xyz[i] - p.p[i])));
+                    p.a[i] += (1 + p.burst) * 0.05 * (simplex.noise2D(p.p[i] * 0.1 + t * 0.1, p.p[(i + 1) % 3] * 0.1 + t * 0.1)) * Math.min(1, Math.abs((xyz[i] - p.p[i])));
                 }
             }
         }
@@ -203,15 +217,18 @@ var mod_crystal = ao.extra.particleModifier(
 
 var data = {
     scaler: 0.5,
+    particles: [],
     rotator: new three.Group(),
     vue: {
         elems: []
     },
+
     height: 1080,
     width: 2560,
     camera_pos: ao.eased(50, 50, 0.05, 0.0001),
     camera_elevation: ao.eased(0, 0, 0.1, 0.00001),
     current_scene: "reel",
+
     circuit_opacity: 0,
     particle_size: 1,
     circuit_opacity_ease: ao.eased(0, 0, 0.008, 0.00001),
@@ -229,7 +246,10 @@ var data = {
     particle_control: {
         mod_crystal: mod_crystal
     },
+
     input: {
+        pressed: 0,
+        click_toggle: false,
         rot_offset: 0,
         rot_offset_e: ao.eased(0, 0, 0.1, 0.00001),
         x: 0,
@@ -238,6 +258,7 @@ var data = {
         ey: ao.eased(0, 0, 0.1, 0.000001)
     },
     data: dt.data,
+    init: init,
     logos: [{
         logo: "logo_process",
         title: "process"
@@ -251,84 +272,204 @@ var data = {
 };
 
 window.data = data;
-
+document.addEventListener("mousedown", e => {
+    data.input.pressed = 1;
+    activity();
+});
+document.addEventListener("mouseup", e => {
+    data.input.pressed = 0;
+    activity();
+});
+document.addEventListener("click", e => {
+    data.input.click_toggle = !data.input.click_toggle;
+    activity();
+});
 
 document.addEventListener("mousemove", e => {
     data.input.x = e.x / (data.width * data.scaler);
     data.input.y = e.y / (data.height * data.scaler);
     data.input.ex.to = data.input.x;
     data.input.ey.to = data.input.y;
+    activity();
 });
 
+function init() {
 
-var scene_idle = ao.sceneBuild((t, dt) => {
-    data.circuit_opacity = scene_idle.visibility.to
-    data.circuit_opacity_ease.e = data.circuit_opacity != 0 ? 0.008 : 0.01;
-    if (scene_idle.visibility.to == 1) {
-        data.camera_pos.e = 0.01;
-        mod_crystal.params.mode = 1;
-        data.particle_size = 1;
-        data.camera_pos.to = 50;
-        data.camera_elevation.e = 0.1;
-        data.camera_elevation.to = 0;
-    }
-}, "main", "idle");
-
-var scene_core = ao.sceneBuild((t, dt) => {
-    if (scene_core.visibility.to == 1) {
-        data.camera_pos.e = 0.005;
-        mod_crystal.params.mode = 0;
-        data.camera_pos.to = 20;
-        data.particle_size = 1;
-        data.camera_elevation.e = 0.1;
-        data.camera_elevation.to = 0;
-    }
-}, "main", "core");
-
-var scene_elevate = ao.sceneBuild((t, dt) => {
-    data.timeline_visibility.to = scene_elevate.visibility.to
-    if (scene_elevate.visibility.to == 1) {
-        data.camera_pos.e = 0.012;
-        mod_crystal.params.mode = 0;
-        data.camera_pos.to = 0;
-        data.camera_elevation.e = 0.1;
-        data.particle_size = 0.3;
-        data.camera_elevation.to = 0;
-    }
-}, "main", "elevate");
-
-(() => {
-    var reel_ui = [];
-    for(var i = 0; i < 10; i++) {
-        reel_ui.push({
-            comp: "catpin",
-            x: 0,
-            y: 0,
-            viz: 1
-        });
-    }
-    data.vue.elems = data.vue.elems.concat(reel_ui);
-    var scene_reel = ao.sceneBuild((t, dt) => {
-        data.reel_visibility.to = scene_reel.visibility.to;
-        if (scene_reel.visibility.to == 1) {
-            data.camera_pos.e = 0.1;
-            mod_crystal.params.mode = 2;
-            data.camera_pos.to = 30;
-            data.camera_elevation.e = 0.1;
+    var scene_idle = ao.sceneBuild((t, dt) => {
+        data.circuit_opacity = scene_idle.visibility.to
+        data.circuit_opacity_ease.e = data.circuit_opacity != 0 ? 0.008 : 0.01;
+        if (scene_idle.visibility.to == 1) {
+            data.camera_pos.e = 0.01;
+            mod_crystal.params.mode = 1;
             data.particle_size = 1;
+            data.camera_pos.to = 50;
+            data.camera_elevation.e = 0.1;
             data.camera_elevation.to = 0;
         }
-    }, "main", "reel");
-})();
+    }, "main", "idle");
+
+    var scene_core = ao.sceneBuild((t, dt) => {
+        if (scene_core.visibility.to == 1) {
+            data.camera_pos.e = 0.005;
+            mod_crystal.params.mode = 0;
+            data.camera_pos.to = 20;
+            data.particle_size = 1;
+            data.camera_elevation.e = 0.1;
+            data.camera_elevation.to = 0;
+        }
+    }, "main", "core");
+
+    var scene_elevate = ao.sceneBuild((t, dt) => {
+        data.timeline_visibility.to = scene_elevate.visibility.to
+        if (scene_elevate.visibility.to == 1) {
+            data.camera_pos.e = 0.012;
+            mod_crystal.params.mode = 0;
+            data.camera_pos.to = 0;
+            data.camera_elevation.e = 0.1;
+            data.particle_size = 0.3;
+            data.camera_elevation.to = 0;
+        }
+    }, "main", "elevate");
 
 
-ao.loop(() => {
-    data.circuit_opacity_ease.to = data.circuit_opacity;
-    data.input.rot_offset = (data.input.ex.value - 0.5) * 1;
-    data.input.rot_offset_e.to = data.input.rot_offset;
-    ao.sceneGrpSelectId("main", data.current_scene, true);
-});
+    var scene_big = ao.sceneBuild((t, dt) => {
+        if (scene_big.visibility.to == 1) {
+            data.camera_pos.e = 0.01;
+            mod_crystal.params.mode = 3; //3 = big number mode
+            data.camera_pos.to = 60;
+            data.camera_elevation.e = 0.1;
+            data.particle_size = 0.5;
+            data.camera_elevation.to = 0;
+        }
+    }, "main", "big"); //big_*
 
 
+    (() => {
+        var reel_calc_pin = new three.Vector3();
+        var reel_ui = [];
+        for (var i in baked.ids) {
+            reel_ui.push({
+                comp: "catpin",
+                anchor: baked.ids[i].anchor,
+                x: 0,
+                y: 0,
+                word: i,
+                viz: 1
+            });
+        }
+        var foco = {
+            comp: "foco",
+            viz: 1
+        };
+        var corp = {
+            comp: "corppin",
+            x: 0,
+            y: 0,
+            data: {},
+            viz: 1
+        };
+        data.vue.elems.push(corp);
+        data.vue.elems.push(foco);
+        data.vue.elems = data.vue.elems.concat(reel_ui);
+        var scene_reel = ao.sceneBuild((t, dt) => {
+            data.reel_visibility.to = scene_reel.visibility.to;
+            foco.viz = Math.random() < scene_reel.visibility.value ? 1 : 0;
+            corp.viz = (Math.random() < scene_reel.visibility.value ? 1 : 0) *
+                (data.ring_cursor.active_elem ? 1 : 0);
+            if (scene_reel.visibility.to == 1) {
+                data.camera_pos.e = 0.1;
+                mod_crystal.params.mode = 2;
+                data.camera_pos.to = 20;
+                data.camera_elevation.e = 0.1;
+                data.particle_size = 1;
+                data.camera_elevation.to = 0;
+                if (data.ring_cursor.active_elem) {
+                    var p = data.ring_cursor.active_elem;
+                    reel_calc_pin.set(p.p[0], p.p[1], p.p[2]);
+                    reel_calc_pin = data.rotator.localToWorld(reel_calc_pin);
+                    var vec = ao.threeVec2ScreenScale(reel_calc_pin, data.width, data.height);
+                    corp.x = vec.x;
+                    corp.y = vec.y;
+                    corp.data = data.ring_cursor.active_elem.core.content;
+                }
+            }
+            //compute 
+            reel_ui.forEach((pin) => {
+                var p = data.particles[pin.anchor];
+                var viz = scene_reel.visibility.to;
+                if (scene_reel.visibility.value > 0.5) {
+                    reel_calc_pin.set(p.p[0], p.p[1], p.p[2]);
+                    reel_calc_pin = data.rotator.localToWorld(reel_calc_pin);
+                    viz *= ao.map(reel_calc_pin.z, -30, -100, 0, 1, true);
+                    var vec = ao.threeVec2ScreenScale(reel_calc_pin, data.width, data.height);
+                    pin.x = vec.x;
+                    pin.y = vec.y;
+                }
+                if (!(data.ring_cursor.active_elem &&
+                        data.ring_cursor.active_elem.core.content.cid_name == pin.word)) {
+                    pin.viz *= 0.5;
+                }
+                pin.viz = ao.ease(pin.viz, viz, 0.2, 0.0001);
+            })
+        }, "main", "reel");
+    })();
+
+
+    ao.loop(() => {
+        data.circuit_opacity_ease.to = data.circuit_opacity;
+        data.input.rot_offset = (data.input.ex.value - 0.5) * 1;
+        data.input.rot_offset_e.to = data.input.rot_offset;
+        ao.sceneGrpSelectId("main", data.current_scene.split("_")[0], true);
+        fixedstuff.scene = data.current_scene;
+        if (data.input.click_toggle) {
+            data.current_scene = 'reel'
+        } else if (!data.input.click_toggle && data.current_scene == 'reel') {
+            data.current_scene = 'big_main'
+        } else {
+            //sub scene toggler
+
+            //indicator
+            if (data.input.ey < 0.4 && data.current_scene != 'elevate') {
+                fixedstuff.hover_indicator = "timeline";
+            } else if (data.input.ey > 0.6 && data.current_scene == 'elevate') {
+                fixedstuff.hover_indicator = "norm";
+            } else {
+                fixedstuff.hover_indicator = "";
+            }
+
+            if (data.input.ey < 0.1 && data.current_scene != 'elevate') {
+                data.current_scene = 'elevate'
+            } else if (data.current_scene == 'elevate' && data.input.ey > 0.8) {
+                data.current_scene = 'big_main'
+            }
+        }
+        fixedstuff.sub_scenes = !(
+            data.current_scene == 'core' ||
+            data.current_scene == 'reel' ||
+            data.current_scene == 'elevate'
+        ) ? 1 : 0
+        if (fixedstuff.sub_scenes && data.input.ey > 0.8) {
+            //selection tool works
+            fixedstuff.sub_scenes = 2;
+            var scenes = ["idle", "big_main", "big_vendor", "big_sku"];
+            var nid = ao.map(data.input.ex, 0.2, 0.8, 0, 3, true);
+            data.current_scene = scenes[Math.floor(nid)];
+        }
+    });
+}
+
+function activity() {
+    clearTimeout(activity.timeout);
+    activity.timeout = setTimeout(() => {
+        data.current_scene = 'core';
+    }, 5000);
+    if(data.current_scene == 'core') {
+        data.current_scene = "big_main";
+    }
+}
+
+activity();
+
+data.vue.elems.push(fixedstuff);
 
 export default data;

@@ -12,6 +12,7 @@ var ptmat = new three.PointsMaterial({
     blending: three.AdditiveBlending,
     color: 0x333333,
     sizeAttenuation: true,
+    depthTest: false,
     size: 0.2,
 });
 

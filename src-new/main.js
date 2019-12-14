@@ -69,7 +69,8 @@ ao.threeOnload(() => {
     ao.vueLoadComponents(comps);
     ao.vueSetup("#app", env.vue);
     baker.init();
+    psys.init();
+    env.init();
     ao.threeLoop();
     ao.looperStart();
-    psys.init();
 })

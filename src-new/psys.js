@@ -258,12 +258,13 @@ export function init() {
     //     mesh.needsUpdate('color');
     // });
 
+    env.particles = particles;
     ao.loop((t, dt) => {
         env.ring_cursor.active_elem = env.ring_cursor.calc_elem;
         env.ring_cursor.active_cid = env.ring_cursor.active_elem ? env.ring_cursor.active_elem.core.content.cid : null;
         env.ring_cursor.calc_elem = null;
         env.ring_cursor.min_dist = 100000;
-        console.log(env.ring_cursor);
+        // console.log(env.ring_cursor);
         ao.extra.particlesUpdate(particles, run_mod, dt, t, 1.0);
         for (var i = 0; i < particles.length; i++) {
             var p = particles[i];
