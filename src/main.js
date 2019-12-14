@@ -69,6 +69,7 @@ function init() {
 
     // const ambientLight = new THREE.AmbientLight(0xffffff);
     const scene = new THREE.Scene();
+    window.scene = scene;
     // scene.add(ambientLight);
 
     if (CONTROLS) {
