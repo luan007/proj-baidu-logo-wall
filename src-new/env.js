@@ -1,6 +1,8 @@
 import * as dt from "./data.json"
 import * as ao from "../libao";
 import * as three from "three";
+import "../node_modules/leapjs/leap-0.6.4";
+
 import {
     baked
 } from "./baker.js";
@@ -214,9 +216,8 @@ var mod_crystal = ao.extra.particleModifier(
     }
 );
 
-
 var data = {
-    scaler: 0.5,
+    scaler: 1,
     particles: [],
     rotator: new three.Group(),
     vue: {
@@ -271,6 +272,13 @@ var data = {
     }]
 };
 
+for(var i = 1; i <= 72; i++) {
+    data.logos.push({
+        logo: "l_" + i,
+        title: "test" + i
+    })
+}
+
 window.data = data;
 document.addEventListener("mousedown", e => {
     data.input.pressed = 1;
@@ -284,7 +292,6 @@ document.addEventListener("click", e => {
     data.input.click_toggle = !data.input.click_toggle;
     activity();
 });
-
 document.addEventListener("mousemove", e => {
     data.input.x = e.x / (data.width * data.scaler);
     data.input.y = e.y / (data.height * data.scaler);
@@ -292,6 +299,41 @@ document.addEventListener("mousemove", e => {
     data.input.ey.to = data.input.y;
     activity();
 });
+
+
+
+
+Leap.loop(function (d) {
+    if (d.hands.length == 0) {
+        data.input.click_toggle = 0;
+        return;
+    }
+    activity();
+    var hand = d.hands[0];
+    console.log(hand.grabStrength, hand.pinchStrength, hand.confidence);
+    data.input.click_toggle = (hand.grabStrength > 0.5 && hand.confidence > 0.3)  ? 1 : 0;
+
+    var x = Math.min(1, Math.max(-1, hand.palmPosition[0] / 150)) / 2 + 0.5;
+    var z = Math.min(1, Math.max(-1, hand.palmPosition[2] / 130)) / 2 + 0.5;
+    var y = Math.min(1, Math.max(0, hand.palmPosition[1] / 400));
+
+    data.input.x = x;
+    data.input.ex.to = data.input.x;
+
+    data.input.y = z;
+    data.input.ey.to = data.input.y;
+
+    // control.tx = x;
+    // control.ty = z;
+    // control.leap_zt = y;
+    // control.leap = 1;
+});
+
+
+
+
+
+
 
 function init() {
 
@@ -429,18 +471,21 @@ function init() {
             //sub scene toggler
 
             //indicator
-            if (data.input.ey < 0.4 && data.current_scene != 'elevate') {
-                fixedstuff.hover_indicator = "timeline";
-            } else if (data.input.ey > 0.6 && data.current_scene == 'elevate') {
-                fixedstuff.hover_indicator = "norm";
-            } else {
-                fixedstuff.hover_indicator = "";
-            }
+            if (data.current_scene != 'core') {
 
-            if (data.input.ey < 0.1 && data.current_scene != 'elevate') {
-                data.current_scene = 'elevate'
-            } else if (data.current_scene == 'elevate' && data.input.ey > 0.8) {
-                data.current_scene = 'big_main'
+                if (data.input.ey < 0.4 && data.current_scene != 'elevate') {
+                    fixedstuff.hover_indicator = "timeline";
+                } else if (data.input.ey > 0.6 && data.current_scene == 'elevate') {
+                    fixedstuff.hover_indicator = "norm";
+                } else {
+                    fixedstuff.hover_indicator = "";
+                }
+
+                if (data.input.ey < 0.1 && data.current_scene != 'elevate') {
+                    data.current_scene = 'elevate'
+                } else if (data.current_scene == 'elevate' && data.input.ey > 0.8) {
+                    data.current_scene = 'big_main'
+                }
             }
         }
         fixedstuff.sub_scenes = !(
@@ -463,7 +508,7 @@ function activity() {
     activity.timeout = setTimeout(() => {
         data.current_scene = 'core';
     }, 5000);
-    if(data.current_scene == 'core') {
+    if (data.current_scene == 'core') {
         data.current_scene = "big_main";
     }
 }

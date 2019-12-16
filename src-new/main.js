@@ -56,13 +56,15 @@ ao.threeLoadLDR_PMREM("ldr", renderer, "./assets/ldr/");
 ao.threeLoadObj("./assets/shape_verts_plate.obj", "testgeo");
 ao.threeLoadObj("/assets/shape_shell.obj", "shell");
 
+for(var i = 1; i <= 72; i++) {
+    ao.threeLoadTexture("./process/logo/" + i + ".png", 'l_'+ i);
+}
+
 ao.threeLoadTexture("./assets/timeline.png", "timeline");
 ao.threeLoadTexture("./assets/timeline_s.png", "timeline_s");
-
 ao.threeLoadTexture("./process/border.png", "b");
 ao.threeLoadTexture("./process/border_bold.png", "bb");
 ao.threeLoadTexture("./process/logo_process.png", "logo_process");
-
 
 ao.threeUnrealPostprocessingStack();
 ao.threeOnload(() => {

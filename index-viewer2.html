@@ -1,0 +1,64 @@
+<html>
+
+<head>
+    <title>T</title>
+    <style>
+        html,
+        body {
+            cursor: none;
+            margin: 0;
+            padding: 0;
+            background: #333;
+        }
+
+        .scaler {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            transform-origin: 0 0;
+        }
+
+        .main,
+        #app {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow: hidden;
+            height: 1080px;
+            width: 5760px;
+        }
+
+        * {
+            user-select: none;
+            font-family: "Foundry Gridnik", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            /* mix-blend-mode: screen; */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="scaler">
+        <div class="main">
+
+        </div>
+        <div id="app">
+            <component v-for='elem in elems' :is="elem.comp" v-bind='elem'></component>
+        </div>
+    </div>
+    <script src="./libao/global.js"></script>
+    <script src="./src-viewer2/main.js"></script>
+</body>
+
+</html>
